@@ -1,5 +1,6 @@
-from typing import Self, Generator
-WIDTH = 100
+import random
+from typing import Generator
+WIDTH = 150
 HEIGHT = 100
 
 class Point2d:
@@ -14,10 +15,6 @@ class Point2d:
     def x(self) -> int:
         return self._x
 
-    @property
-    def y(self) -> int:
-        return self._y
-
     @x.setter
     def x(self, value: int) -> None:
         if 0 <= value <= WIDTH:
@@ -25,19 +22,23 @@ class Point2d:
         else:
             raise ValueError(f"y must be between 0 and {WIDTH}")
 
+    @property
+    def y(self) -> int:
+        return self._y
+
     @y.setter
     def y(self, value: int) -> None:
         if 0 <= value <= HEIGHT:
             self._y = value
         else:
-            raise ValueError(f"y must be between 0 and {WIDTH}")
+            raise ValueError(f"y must be between 0 and {HEIGHT}")
 
-    def __eq__(self,other : Self)-> bool:
+    def __eq__(self,other : 'Point2d')-> bool:
         if not isinstance(other, Point2d):
             return False
         return self.x == other.x and self.y == other.y
 
-    def __ne__(self, other : Self)-> bool:
+    def __ne__(self, other : 'Point2d')-> bool:
         return not (self == other)
 
     def __str__(self) -> str:
@@ -55,20 +56,20 @@ class Vector2d:
         self.y = y
 
     @classmethod
-    def from_points(cls, start: Point2d, end: Point2d) -> Self:
+    def from_points(cls, start: Point2d, end: Point2d) -> 'Vector2d':
         return cls(end.x - start.x, end.y - start.y)
 
     @property
     def x(self) -> int:
         return self._x
 
-    @property
-    def y(self) -> int:
-        return self._y
-
     @x.setter
     def x(self, value: int) -> None:
         self._x = value
+
+    @property
+    def y(self) -> int:
+        return self._y
 
     @y.setter
     def y(self, value: int) -> None:
@@ -99,12 +100,12 @@ class Vector2d:
     def __len__(self) -> int:
         return 2
 
-    def __eq__(self, other : Self) -> bool:
+    def __eq__(self, other : 'Vector2d') -> bool:
         if isinstance(other, Vector2d):
             return self.x == other.x and self.y == other.y
         return False
 
-    def __ne__(self, other : Self) -> bool:
+    def __ne__(self, other : 'Vector2d') -> bool:
         return not(self == other)
 
     def __str__(self) -> str:
@@ -116,104 +117,124 @@ class Vector2d:
     def __abs__(self) -> float:
         return (self.x*self.x + self.y*self.y)**0.5
 
-    def __add__(self, other : Self) -> Self:
+    def __add__(self, other : 'Vector2d') -> 'Vector2d':
         if isinstance(other,Vector2d):
             return Vector2d(self.x+other.x,self.y+other.y)
         raise TypeError(f"can only add Vector2d(not{type(other)}) to Vector2d")
 
-    def __sub__(self, other : Self) -> Self:
+    def __sub__(self, other : 'Vector2d') -> 'Vector2d':
         if isinstance(other,Vector2d):
             return Vector2d(self.x-other.x,self.y-other.y)
         raise TypeError(f"can only sub Vector2d(not{type(other)}) to Vector2d")
 
-    def __mul__(self, value : int) -> Self:
+    def __mul__(self, value : int) -> 'Vector2d':
         if isinstance(value,int):
             return Vector2d(self.x * value,self.y * value)
         raise TypeError("Can only multiply Vector2d by int")
 
-    def __rmul__(self, value : int) -> Self:
+    def __rmul__(self, value : int) -> 'Vector2d':
         if isinstance(value,int):
             return Vector2d(self.x * value,self.y * value)
         raise TypeError("Can only multiply Vector2d by int")
 
-    def __floordiv__(self, value : int) -> Self:
+    def __floordiv__(self, value : int) -> 'Vector2d':
         if isinstance(value,int):
             return Vector2d(self.x // value,self.y // value)
         raise TypeError("Can only divide Vector2d by int")
 
-    def dot_product(self,other : Self) -> int:
+    @staticmethod
+    def dot_product_static(v1: 'Vector2d', v2: 'Vector2d') -> int:
+        if isinstance(v1, Vector2d) and isinstance(v2, Vector2d):
+            return v1.x * v2.x + v1.y * v2.y
+        raise TypeError("Can only dot product Vector2d by Vector2d")
+
+    def dot_product(self,other : 'Vector2d') -> int:
         if isinstance(other,Vector2d):
             return self.x * other.x  + self.y * other.y
         raise TypeError("Can only dot product Vector2d by Vector2d")
 
     @staticmethod
-    def dot_product_static(v1 : Self, v2 : Self) -> int:
-        if isinstance(v1,Vector2d) and isinstance(v2,Vector2d):
-            return v1.x * v2.x + v1.y * v2.y
-        raise TypeError("Can only dot product Vector2d by Vector2d")
+    def cross_product_static(v1: 'Vector2d', v2: 'Vector2d') -> 'Vector2d':
+        if isinstance(v1, Vector2d) and isinstance(v2, Vector2d):
+            return Vector2d(v1.x * v2.y - v1.y * v2.x, 0)
+        raise TypeError("Can only vector product Vector2d by Vector2d")
 
-    def cross_product(self,other : Self) -> Self:
-        if isinstance(other,Vector2d):
-            return Vector2d(self.x * other.y - self.y * other.x,0)
+    def cross_product(self, other: 'Vector2d') -> 'Vector2d':
+        if isinstance(other, Vector2d):
+            return Vector2d(self.x * other.y - self.y * other.x, 0)
         raise TypeError("Can only vector product Vector2d by Vector2d")
 
     @staticmethod
-    def cross_product_static(v1 : Self,v2 : Self) -> Self:
-        if isinstance(v1,Vector2d) and isinstance(v2,Vector2d):
-            return Vector2d(v1.x * v2.y - v1.y * v2.x,0)
-        raise TypeError("Can only vector product Vector2d by Vector2d")
-
-    def triple_product(self, v2 : Self, v3 : Self) -> int:
-        if isinstance(v2,Vector2d) and isinstance(v3,Vector2d):
-            return self.dot_product(Vector2d.cross_product(v2,v3))
-        else:
-            raise TypeError("Can only triple product Vector2d by Vector2d by Vector2d")
-
-    @staticmethod
-    def triple_product_static(v1 : Self, v2 : Self, v3 : Self) -> int:
+    def triple_product_static(v1 : 'Vector2d', v2 : 'Vector2d', v3 : 'Vector2d') -> int:
         if isinstance(v1,Vector2d) and isinstance(v2,Vector2d) and isinstance(v3,Vector2d):
             return v1.dot_product(Vector2d.cross_product(v2,v3))
         else:
             raise TypeError("Can only triple product Vector2d by Vector2d by Vector2d")
 
+    def triple_product(self, v2 : 'Vector2d', v3 : 'Vector2d') -> int:
+        if isinstance(v2,Vector2d) and isinstance(v3,Vector2d):
+            return self.dot_product(Vector2d.cross_product(v2,v3))
+        else:
+            raise TypeError("Can only triple product Vector2d by Vector2d by Vector2d")
+
 def main():
-    a = Point2d(5,5)
-    b = Point2d(4, 1)
-    print(a,b)
+    print("Класс Point2d:")
+    x = random.randint(0,WIDTH)
+    y = random.randint(0,HEIGHT)
 
-    c = Vector2d(5,3)
-    d = Vector2d.from_points(b,a)
+    a = Point2d(x,y)
+    print(f"Point2d по x={x}, y={y}: {a}")
+    print()
 
-    print(c,d)
+    x = random.randint(0,WIDTH)
+    y = random.randint(0,HEIGHT)
 
-    c[0] = 4
-    d[0] = c[0]
+    b = Point2d(x,y)
 
-    print(c,d)
+    print(f"{a} == {a}: {a == a}")
+    print(f"{a} == {b}: {a == b}")
+    print()
 
-    print(len(c))
+    print("Класс Vector2d:")
+    vec1 = Vector2d(x,y)
+    print(f"Vector2d по x={x}, y={y}: vec1={vec1}")
+    vec2 = Vector2d.from_points(a,b)
+    print(f"Vector2d по start={a}, end={b}: vec2={vec2}")
+    print()
 
-    print(c == d, c == a, c == c)
-    print(c != d, c != a, c != c)
+    print("Доступ по индексу:")
+    for i in range(len(vec1)): print(f"vec1[{i}] = {vec1[i]}")
+    print()
 
-    for i in c:
-        print(i)
+    print(f"Итерирование {vec1}:")
+    for i in vec1: print(i)
+    print()
 
-    e = c + d
-    print(c + d,e)
-    #c + a
-    print(c-d)
+    print(f"{vec1} == {vec2}: {vec1 == vec2}")
+    print(f"{vec1} == {vec1}: {vec1 == vec1}")
+    print()
 
-    print(abs(c))
+    print(f"abs({vec1}) = {abs(vec1)}")
+    print(f"{vec1} + {vec2} = {vec1 + vec2}")
+    print(f"{vec1} - {vec2} = {vec1 - vec2}")
+    randval = random.randint(0,15)
+    print(f"{vec1}*{randval} = {vec1 * randval}")
+    print(f"{randval}*{vec1} = {randval * vec1}")
+    randval = random.randint(1, 15)
+    print(f"{vec1}//{randval} = {vec1 // randval}")
+    print()
 
-    print(c*5)
-    print(c//2)
+    print(f"Скалярное произведение {vec1}.dot_product({vec2}) = {vec1.dot_product(vec2)}")
+    print(f"Статическое скалярное произведение Vector2d.dot_product_static({vec1},{vec2}) = {Vector2d.dot_product_static(vec1,vec2)}")
+    print()
 
-    print(c.dot_product(d), Vector2d.dot_product_static(c,d))
+    print(f"Векторное произведение {vec1}.cross_product({vec2}) = {vec1.cross_product(vec2)}")
+    print(f"Статическое векторное произведение Vector2d.cross_product_static({vec1},{vec2}) = {Vector2d.cross_product_static(vec1, vec2)}")
+    print()
 
-    print(c.cross_product(d), Vector2d.cross_product_static(c, d))
-
-    print(Vector2d.triple_product(c,d,e))
+    vec3 = vec1+vec2
+    print(f"Смешанное произведение {vec1}.triple_product({vec2},{vec3}) = {vec1.triple_product(vec2,vec3)}")
+    print(f"Статическое смешанное произведение Vector2d.triple_product_static({vec1},{vec2},{vec3}) = {Vector2d.triple_product_static(vec1, vec2, vec3)}")
 
 if __name__ == "__main__":
     main()

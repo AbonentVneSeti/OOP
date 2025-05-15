@@ -1,7 +1,18 @@
-class Printer:
+class Color:
     ...
 
-def get_font(font_path : str):
+class Printer:
+    def __init__(self, color : Color):
+        self.Color = color
+
+
+    @classmethod
+    def print(cls,text : str, color : Color, position : tuple[int,int], symbol : str):
+        ...
+
+
+
+def get_font(font_path : str) -> dict[str : str, str : tuple[int,int]]:
     with open(file = font_path) as file:
         font = file.readlines()
 
@@ -22,4 +33,5 @@ def main():
 
 if __name__ == "__main__":
     #main()
-    print(get_font('font1.txt'))
+    a = get_font('font0.txt')
+    print(a['A'])
