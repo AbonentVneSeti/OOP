@@ -1,55 +1,61 @@
-from abc import ABC, abstractmethod
 import datetime, re
-from typing import List
+from typing import List, Protocol
 
-class LogFilterProtocol(ABC):
-    @abstractmethod
+
+class LogFilterProtocol(Protocol):
     def match(self, text: str) -> bool:
         pass
 
-class LogHandlerProtocol(ABC):
-    @abstractmethod
+
+class LogHandlerProtocol(Protocol):
     def handle(self, text: str) -> None:
         pass
 
+
 class SimpleLogFilter(LogFilterProtocol):
-    def __init__(self, pattern: str):
+    def __init__(self, pattern: str) -> None:
         self.pattern = pattern
 
     def match(self, text: str) -> bool:
         return self.pattern in text
 
+
 class ReLogFilter(LogFilterProtocol):
-    def __init__(self, regex_pattern: str):
+    def __init__(self, regex_pattern: str) -> None:
         self.regex = re.compile(regex_pattern)
 
     def match(self, text: str) -> bool:
         return bool(self.regex.search(text))
 
+
 class ConsoleHandler(LogHandlerProtocol):
     def handle(self, text: str) -> None:
         print(f"[CONSOLE] {text}")
 
+
 class FileHandler(LogHandlerProtocol):
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str) -> None:
         self.file_path = file_path
 
     def handle(self, text: str) -> None:
         with open(self.file_path, 'a', encoding='utf-8') as file:
             file.write(f"{text}\n")
 
+
 class SocketHandler(LogHandlerProtocol):
     def handle(self, text: str) -> None:
         print(f"[SOCKET] Sending message: {text}")
+
 
 class SyslogHandler(LogHandlerProtocol):
     def handle(self, text: str) -> None:
         print(f"[SYSLOG] Logging to system log: {text}")
 
+
 class Logger:
     def __init__(self,
                  filters: List[LogFilterProtocol] = None,
-                 handlers: List[LogHandlerProtocol] = None):
+                 handlers: List[LogHandlerProtocol] = None) -> None:
         self.filters = filters if filters is not None else []
         self.handlers = handlers if handlers is not None else []
 
@@ -61,6 +67,7 @@ class Logger:
 
         for handler in self.handlers:
             handler.handle(text)
+
 
 def main():
     error_filter = SimpleLogFilter("ERROR")

@@ -2,6 +2,7 @@ import random
 from Point2d import Point2d, HEIGHT, WIDTH
 from Vector2d import Vector2d
 
+
 def main():
     print("Класс Point2d:")
     x = random.randint(0,WIDTH)
@@ -27,7 +28,7 @@ def main():
     print(f"Vector2d по start={a}, end={b}: vec2={vec2}")
     print()
 
-    print("Доступ по индексу:")
+    print(f"Доступ по индексу к {vec1}:")
     for i in range(len(vec1)): print(f"vec1[{i}] = {vec1[i]}")
     print()
 
@@ -42,11 +43,11 @@ def main():
     print(f"abs({vec1}) = {abs(vec1)}")
     print(f"{vec1} + {vec2} = {vec1 + vec2}")
     print(f"{vec1} - {vec2} = {vec1 - vec2}")
-    randval = random.randint(0,15)
-    print(f"{vec1}*{randval} = {vec1 * randval}")
-    print(f"{randval}*{vec1} = {randval * vec1}")
-    randval = random.randint(1, 15)
-    print(f"{vec1}//{randval} = {vec1 // randval}")
+    rand = random.randint(0,15)
+    print(f"{vec1}*{rand} = {vec1 * rand}")
+    print(f"{rand}*{vec1} = {rand * vec1}")
+    rand = random.randint(1, 15)
+    print(f"{vec1}//{rand} = {vec1 // rand}")
     print()
 
     print(f"Скалярное произведение {vec1}.dot_product({vec2}) = {vec1.dot_product(vec2)}")

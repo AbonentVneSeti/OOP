@@ -27,7 +27,7 @@ class Printer:
 
     @staticmethod
     def init() -> None:
-        print("\033[2J", end="")
+        print("\033[2J\033[1;1H", end="")
 
     @classmethod
     def load_font(cls, filename: str) -> None:
@@ -116,7 +116,7 @@ class Printer:
         x, y = self.current_x, self.current_y
         for char in text:
             if char not in self._font:
-                continue
+                raise ValueError(f"Символ {char} отсутствует в шрифте.")
 
             char_lines = self._font[char]
             for dy, line in enumerate(char_lines):
@@ -128,7 +128,8 @@ class Printer:
         self.current_x = x
         print(flush=True)
 
-if __name__ == "__main__":
+
+def main():
     Printer.init()
     Printer.load_font('font.txt')
 
@@ -136,3 +137,6 @@ if __name__ == "__main__":
     with Printer(Color.BLACK, (5, 5), "A", background_color=Color.WHITE) as printer:
         printer.print("DDDD")
         printer.print(" AB")
+
+if __name__ == "__main__":
+    main()

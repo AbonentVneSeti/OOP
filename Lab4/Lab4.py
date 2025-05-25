@@ -1,72 +1,61 @@
-from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Any, Protocol
 
-# Протокол для слушателя изменений свойства
-class PropertyChangedListenerProtocol(ABC):
-    @abstractmethod
-    def on_property_changed(self, obj, property_name: str) -> None:
+
+class PropertyChangedListenerProtocol(Protocol):
+    def on_property_changed(self, obj : Any, property_name: str) -> None:
         pass
 
-# Протокол для добавления/удаления слушателей изменений
-class DataChangedProtocol(ABC):
-    @abstractmethod
+
+class DataChangedProtocol(Protocol):
     def add_property_changed_listener(self, listener: PropertyChangedListenerProtocol) -> None:
         pass
 
-    @abstractmethod
     def remove_property_changed_listener(self, listener: PropertyChangedListenerProtocol) -> None:
         pass
 
-# Протокол для слушателя валидации изменений свойства
-class PropertyChangingListenerProtocol(ABC):
-    @abstractmethod
-    def on_property_changing(self, obj, property_name: str, old_value, new_value) -> bool:
+
+class PropertyChangingListenerProtocol(Protocol):
+    def on_property_changing(self, obj : Any, property_name: str, old_value : Any, new_value : Any) -> bool:
         pass
 
-# Протокол для добавления/удаления валидаторов
-class DataChangingProtocol(ABC):
-    @abstractmethod
+
+class DataChangingProtocol(Protocol):
     def add_property_changing_listener(self, listener: PropertyChangingListenerProtocol) -> None:
         pass
 
-    @abstractmethod
     def remove_property_changing_listener(self, listener: PropertyChangingListenerProtocol) -> None:
         pass
 
-class Person(DataChangingProtocol, DataChangedProtocol):
-    def __init__(self):
+
+class User(DataChangingProtocol, DataChangedProtocol):
+    def __init__(self) -> None:
         self._changing_listeners: List[PropertyChangingListenerProtocol] = []
         self._changed_listeners: List[PropertyChangedListenerProtocol] = []
         self._name = ""
-        self._age = 0
+        self._email = ""
 
-    # DataChangingProtocol методы
     def add_property_changing_listener(self, listener: PropertyChangingListenerProtocol) -> None:
         self._changing_listeners.append(listener)
 
     def remove_property_changing_listener(self, listener: PropertyChangingListenerProtocol) -> None:
         self._changing_listeners.remove(listener)
 
-    # DataChangedProtocol методы
     def add_property_changed_listener(self, listener: PropertyChangedListenerProtocol) -> None:
         self._changed_listeners.append(listener)
 
     def remove_property_changed_listener(self, listener: PropertyChangedListenerProtocol) -> None:
         self._changed_listeners.remove(listener)
 
-    # Валидация изменений
-    def _validate_property_change(self, property_name: str, old_value, new_value) -> bool:
+    def _validate_property_change(self, property_name: str, old_value : Any, new_value : Any) -> bool:
         for listener in self._changing_listeners:
             if not listener.on_property_changing(self, property_name, old_value, new_value):
                 return False
         return True
 
-    # Уведомление об изменениях
     def _notify_property_changed(self, property_name: str) -> None:
         for listener in self._changed_listeners:
             listener.on_property_changed(self, property_name)
 
-    # Свойства с валидацией и уведомлениями
     @property
     def name(self) -> str:
         return self._name
@@ -75,63 +64,74 @@ class Person(DataChangingProtocol, DataChangedProtocol):
     def name(self, value: str) -> None:
         if self._name != value:
             if self._validate_property_change("name", self._name, value):
-                old_value = self._name
                 self._name = value
                 self._notify_property_changed("name")
 
     @property
-    def age(self) -> int:
-        return self._age
+    def email(self) -> str:
+        return self._email
 
-    @age.setter
-    def age(self, value: int) -> None:
-        if self._age != value:
-            if self._validate_property_change("age", self._age, value):
-                old_value = self._age
-                self._age = value
-                self._notify_property_changed("age")
+    @email.setter
+    def email(self, value: str) -> None:
+        if self._email != value:
+            if self._validate_property_change("email", self._email, value):
+                self._email = value
+                self._notify_property_changed("email")
 
-# Валидатор: возраст не может быть отрицательным
-class AgeValidator(PropertyChangingListenerProtocol):
-    def on_property_changing(self, obj, property_name: str, old_value, new_value) -> bool:
-        if property_name == "age" and new_value < 0:
-            print("[AgeValidator] Ошибка: возраст не может быть отрицательным!")
+
+class EmailValidator(PropertyChangingListenerProtocol):
+    def on_property_changing(self, obj : DataChangingProtocol, property_name: str, old_value: Any, new_value : Any) -> bool:
+        if property_name != 'email':
+            return True
+        if not isinstance(new_value,str):
+            print("[EmailValidator] Ошибка: Email должно быть строкой!")
+            return False
+        if len(new_value) <= 5:
+            print("[EmailValidator] Ошибка: Email слишком короткий!")
+            return False
+        if new_value.count('@') != 1 or not '.' in new_value.split('@')[-1] or '.' in new_value.split('@')[0]:
+            print("[EmailValidator] Ошибка: Email не корректен!")
             return False
         return True
 
-# Валидатор: имя не может быть пустым
+
 class NameValidator(PropertyChangingListenerProtocol):
-    def on_property_changing(self, obj, property_name: str, old_value, new_value) -> bool:
-        if property_name == "name" and len(new_value.strip()) == 0:
+    def on_property_changing(self, obj  : DataChangingProtocol, property_name: str, old_value : Any, new_value : Any) -> bool:
+        if property_name != "name":
+            return True
+        if not isinstance(new_value,str):
+            print("[NameValidator] Ошибка: имя должно быть строкой!")
+            return False
+        if len(new_value) == 0:
             print("[NameValidator] Ошибка: имя не может быть пустым!")
             return False
+        if not new_value.isalpha():
+            print("[NameValidator] Ошибка: имя не должно содержать цифр!")
+            return False
         return True
 
-# Логгер изменений
-class ChangeLogger(PropertyChangedListenerProtocol):
-    def on_property_changed(self, obj, property_name: str) -> None:
-        print(f"[ChangeLogger] Свойство '{property_name}' изменено. Новое значение: {getattr(obj, property_name)}")
 
-# Еще один логгер
-class AnotherLogger(PropertyChangedListenerProtocol):
-    def on_property_changed(self, obj, property_name: str) -> None:
-        print(f"[AnotherLogger] {property_name} = {getattr(obj, property_name)}")
+class ConsoleLogger(PropertyChangedListenerProtocol):
+    def on_property_changed(self, obj : DataChangedProtocol, property_name: str) -> None:
+        print(f"[ConsoleLogger] Свойство '{property_name}' изменено. Новое значение: {getattr(obj, property_name)}")
 
-# Создаем объект и слушатели
-person = Person()
-person.add_property_changing_listener(AgeValidator())
-person.add_property_changing_listener(NameValidator())
-person.add_property_changed_listener(ChangeLogger())
-person.add_property_changed_listener(AnotherLogger())
 
-# Успешные изменения
-person.name = "Алиса"  # Изменится и вызовет логгеры
-person.age = 25        # Изменится и вызовет логгеры
+def main():
+    user = User()
+    user.add_property_changing_listener(EmailValidator())
+    user.add_property_changing_listener(NameValidator())
+    user.add_property_changed_listener(ConsoleLogger())
 
-# Некорректные изменения (блокируются валидаторами)
-person.name = ""       # Блокируется NameValidator
-person.age = -5        # Блокируется AgeValidator
+    print("\nКорректный ввод")
+    user.name = "Name"
+    user.email = "NameDigits@example.com"
 
-# Проверка значений
-print("\nИтоговые значения:")
-print(f"Имя: {person.name}, Возраст: {person.age}")
+    print("\nНекорректный ввод")
+    user.name = ""
+    user.email = "AA@AAAA@AAAA.ru"
+
+    print("\nИтоговые значения:")
+    print(f"Имя: {user.name}, Email: {user.email}")
+
+if __name__ == "__main__":
+    main()
