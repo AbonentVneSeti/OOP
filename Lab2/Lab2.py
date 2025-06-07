@@ -40,7 +40,7 @@ class Printer:
 
         cls._size = (int(size_parts[0]), int(size_parts[1]))
 
-        if (len(font_file) - 1) % (cls._size[1] + 1) != 0:
+        if (len(font_file) - 1) % (cls._size[0] + 1) != 0:
             raise ValueError(f"Некорректный размер файла")
 
         for char in range(1, len(font_file), cls._size[0] + 1):
@@ -131,12 +131,13 @@ class Printer:
 
 def main():
     Printer.init()
-    Printer.load_font('font.txt')
 
-    Printer.print_("ABCD", Color.RED, (0, 0), "#", background_color=Color.TRANSPARENT)
-    with Printer(Color.BLACK, (5, 5), "A", background_color=Color.WHITE) as printer:
-        printer.print("DDDD")
-        printer.print(" AB")
+    Printer.load_font("font5.txt")
+    Printer.print_("ABCD", Color.BLACK, symbol= 'o', background_color=Color.WHITE)
 
-if __name__ == "__main__":
+    Printer.load_font("font7.txt")
+    with Printer(position =(2, 7), symbol= "<", color= Color.MAGENTA) as printer:
+        printer.print("RESOLUTION")
+
+if __name__ == '__main__':
     main()

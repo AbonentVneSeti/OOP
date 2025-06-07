@@ -1,0 +1,14 @@
+a
+a
+undo: removed 'a'
+volume increased by 20%
+volume increased by 20%
+volume increased by 20%
+volume increased by 20%
+volume increased by 20%
+volume decreased by 20%
+media player launched
+undo: media player closed
+redo: media player launched
+undo: media player closed
+Keyboard state saved

@@ -44,7 +44,7 @@ def demo2():
     if auth_service.is_authorized:
         print(auth_service.current_user)
         auth_service.sign_out()
-        print("\nАвторизован после выхода:", auth_service.is_authorized)
+        print(f"Авторизован после выхода: {auth_service.is_authorized}\n")
 
         auth_service.sign_in(login="admin", password="admin123")
         print(f"Авторизован: {auth_service.current_user}")
